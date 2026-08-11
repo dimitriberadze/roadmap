@@ -1,0 +1,1349 @@
+<!DOCTYPE html>
+<html lang="ka" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Epic Roadmap Business Manager</title>
+<style>
+  :root {
+    --ink: #1c1f26;
+    --paper: #f3ede2;
+    --road: #33363d;
+    --road-edge: #22242a;
+    --road-line: #f4d35e;
+    --verge-2: #5a7550;
+    --layby: #cfc6b4;
+    --panel: #fffaf0;
+    --panel-border: rgba(28, 31, 38, 0.14);
+    --accent: #ff6a3d;
+    --muted: #6b6f76;
+    --tbd: #b8ac93;
+    --status-deployed: #2f9e8f;
+    --status-done: #5b8c3e;
+    --status-inprogress: #d98d2b;
+    --status-backlog: #7c8494;
+    --ok: #2f9e8f;
+    --warn: #d98d2b;
+    --over: #d24a3a;
+    --shadow: 0 8px 24px rgba(28, 31, 38, 0.14);
+    --brand-orange: #f0491c;
+    --brand-orange-deep: #c8360f;
+    --brand-cream: #fff3e8;
+    --brand-ink: #1c1f26;
+    --brand-muted: #6b6f76;
+    color-scheme: light;
+  }
+  :root[data-theme="dark"] {
+    --ink: #eef0f3; --paper: #10131a; --road: #2a2d35; --road-edge: #16181d;
+    --road-line: #f4d35e; --verge-2: #263420; --layby: #3a3f3a; --panel: #1a1e26;
+    --panel-border: rgba(255, 255, 255, 0.12); --accent: #ff8a5c; --muted: #9aa1ad;
+    --tbd: #55503f; --status-deployed: #3db3a3; --status-done: #7fb356;
+    --status-inprogress: #eba748; --status-backlog: #8f97a6;
+    --ok: #3db3a3; --warn: #eba748; --over: #ef6a58;
+    --shadow: 0 8px 28px rgba(0, 0, 0, 0.45); color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .heading-font {
+    font-family: Charcoal, "Avenir Next", "Segoe UI Semibold", "Segoe UI", system-ui, sans-serif;
+    font-weight: 800;
+    letter-spacing: 0.01em;
+  }
+
+  header.top {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    overflow: hidden;
+    background: linear-gradient(160deg, var(--brand-orange) 0%, var(--brand-orange-deep) 100%);
+    padding: 20px clamp(16px, 4vw, 40px) 26px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    align-items: flex-end;
+    justify-content: space-between;
+  }
+  .header-ribbon { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; opacity: 0.5; }
+  .brand-mark { position: relative; display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+  .brand-mark .badge {
+    width: 26px; height: 26px; border-radius: 8px;
+    background: var(--brand-cream);
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2); flex: none;
+  }
+  .brand-mark .badge svg { width: 16px; height: 16px; }
+  .brand-mark .wordmark {
+    font-size: 11.5px; font-weight: 700; letter-spacing: 0.04em;
+    color: var(--brand-cream); text-transform: uppercase; opacity: 0.9;
+  }
+  .title-block { position: relative; }
+  .title-block h1 { margin: 0; font-size: clamp(20px, 3vw, 28px); text-transform: uppercase; line-height: 1.1; color: var(--brand-cream); }
+  .title-block p { margin: 6px 0 0; color: color-mix(in srgb, var(--brand-cream) 82%, transparent); font-size: 13px; max-width: 60ch; }
+
+  .legend { position: relative; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .legend button {
+    display: flex; align-items: center; gap: 6px;
+    padding: 6px 12px 6px 8px; border-radius: 999px;
+    border: 1px solid transparent; background: var(--brand-cream); color: var(--brand-ink);
+    font-size: 12.5px; cursor: pointer; transition: opacity 0.15s ease, transform 0.1s ease;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  }
+  .legend button:hover { transform: translateY(-1px); }
+  .legend button.off { opacity: 0.45; }
+  .legend .swatch { width: 10px; height: 10px; border-radius: 3px; flex: none; }
+  .legend .count { color: var(--brand-muted); font-variant-numeric: tabular-nums; }
+
+  .toolbar {
+    max-width: 1180px; margin: 14px auto 0;
+    padding: 0 clamp(16px, 4vw, 40px);
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    font-size: 12.5px; color: var(--muted);
+  }
+  .toolbar .btn {
+    border: 1px solid var(--panel-border); background: var(--panel); color: var(--ink);
+    font: inherit; padding: 5px 11px; border-radius: 999px; cursor: pointer;
+  }
+  .toolbar .btn:hover { border-color: var(--accent); }
+  .toolbar .btn.primary-toggle { background: var(--accent); border-color: var(--accent); color: #fff9f4; font-weight: 700; }
+  #syncState { font-variant-numeric: tabular-nums; }
+  #syncState.err { color: var(--over); }
+  body:not(.mode-edit) .edit-only { display: none !important; }
+
+  /* the road scrolls across the full viewport width — no side frames */
+  .road-wrap { position: relative; width: 100%; max-width: none; margin: 0; padding: 30px 0 24px; overflow-x: auto; overflow-y: hidden; }
+  .road-inner { position: relative; margin: 0 auto; }
+  svg.road-svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
+  .markers { position: relative; }
+
+  .date-tag {
+    position: absolute; transform: translate(-50%, -50%);
+    background: var(--ink); color: var(--paper);
+    font-size: 11px; font-weight: 800; letter-spacing: 0.03em;
+    padding: 3px 9px; border-radius: 999px; white-space: nowrap; z-index: 4; box-shadow: var(--shadow);
+  }
+
+  .card {
+    position: absolute; width: 250px;
+    background: var(--panel); border: 1px solid var(--panel-border);
+    border-radius: 12px; box-shadow: var(--shadow); padding: 12px 14px; z-index: 3;
+    transition: border-color 0.12s ease, box-shadow 0.12s ease;
+  }
+  .card:hover { border-color: var(--accent); box-shadow: 0 12px 28px rgba(28, 31, 38, 0.22); }
+  .top-row {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 11px; color: var(--muted); font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.03em; margin-bottom: 5px;
+  }
+  .top-row .dot { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+  .top-row .key-label { flex: 1 1 auto; }
+  .icon-btn {
+    border: none; background: none; color: var(--muted); cursor: pointer;
+    font-size: 12px; padding: 2px 4px; border-radius: 5px; line-height: 1; flex: none;
+    text-decoration: none;
+  }
+  .icon-btn:hover { color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent); }
+  .card h4 { margin: 0 0 4px; font-size: 14.5px; line-height: 1.35; font-weight: 700; }
+  .card .comment, .depot-card .comment {
+    margin: 6px 0 0; padding-top: 6px; border-top: 1px dashed var(--panel-border);
+    font-size: 12.5px; font-style: italic; color: var(--muted); line-height: 1.4;
+  }
+
+  /* ---- ITV metrics block ---- */
+  .itv {
+    margin-top: 8px; padding-top: 7px; border-top: 1px dashed var(--panel-border);
+    font-size: 11.5px; color: var(--muted);
+  }
+  .itv .itv-head {
+    display: flex; align-items: center; gap: 5px;
+    font-size: 10.5px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em;
+    margin-bottom: 5px;
+  }
+  .itv .itv-head a { color: var(--accent); text-decoration: none; font-weight: 800; }
+  .itv .itv-head a:hover { text-decoration: underline; }
+  .metrics { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px; }
+  .metric {
+    background: color-mix(in srgb, var(--ink) 5%, transparent);
+    border-radius: 7px; padding: 4px 6px; text-align: center;
+  }
+  .metric .m-lbl { display: block; font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.03em; opacity: 0.8; }
+  .metric .m-val { display: block; font-size: 15px; font-weight: 800; color: var(--ink); font-variant-numeric: tabular-nums; line-height: 1.25; }
+  .metric.actual.ok .m-val { color: var(--ok); }
+  .metric.actual.warn .m-val { color: var(--warn); }
+  .metric.actual.over .m-val { color: var(--over); }
+  .sprint-list { margin-top: 5px; font-size: 10.5px; line-height: 1.4; opacity: 0.85; }
+  .no-itv { font-size: 11px; font-style: italic; }
+
+  /* ---- child issues (stories / tasks / bugs) ---- */
+  .issues { margin-top: 7px; padding-top: 7px; border-top: 1px dashed var(--panel-border); font-size: 11px; }
+  .issues > summary {
+    cursor: pointer; list-style: none; display: flex; align-items: center; gap: 6px;
+    font-size: 10.5px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.03em; color: var(--muted);
+  }
+  .issues > summary::-webkit-details-marker { display: none; }
+  .issues > summary::before { content: "▸"; font-size: 9px; }
+  .issues[open] > summary::before { content: "▾"; }
+  .type-chips { display: flex; gap: 3px; flex-wrap: wrap; margin-left: auto; }
+  .chip {
+    font-size: 9px; font-weight: 800; padding: 1px 5px; border-radius: 999px;
+    background: color-mix(in srgb, var(--ink) 9%, transparent); color: var(--muted); letter-spacing: 0.02em;
+  }
+  .chip.bug { background: color-mix(in srgb, var(--over) 18%, transparent); color: var(--over); }
+  ul.issue-list {
+    list-style: none; margin: 6px 0 0; padding: 0;
+    display: flex; flex-direction: column; gap: 7px; max-height: 260px; overflow: auto;
+  }
+  ul.issue-list li { display: block; line-height: 1.35; }
+  ul.issue-list .i-head { display: flex; gap: 5px; align-items: center; flex-wrap: wrap; }
+  ul.issue-list .i-dot { width: 6px; height: 6px; border-radius: 50%; flex: none; }
+  ul.issue-list a { color: var(--accent); text-decoration: none; font-weight: 700; font-variant-numeric: tabular-nums; flex: none; }
+  ul.issue-list a:hover { text-decoration: underline; }
+  ul.issue-list .i-type { font-size: 8.5px; font-weight: 800; text-transform: uppercase; color: var(--muted); flex: none; }
+  ul.issue-list .i-status {
+    font-size: 8.5px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.02em;
+    padding: 1px 5px; border-radius: 999px; flex: none; white-space: nowrap;
+  }
+  ul.issue-list .i-pts { font-size: 8.5px; font-weight: 800; color: var(--muted); flex: none; }
+  ul.issue-list .i-sum { display: block; margin-left: 11px; color: var(--ink); opacity: 0.85; font-size: 10.5px; }
+  ul.issue-list .i-sub { margin-left: 12px; opacity: 0.92; }
+  .issues .empty { margin-top: 6px; font-style: italic; color: var(--muted); font-size: 10.5px; }
+
+  .inline-date-wrap {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 11px; color: var(--muted); margin-top: 6px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.02em;
+  }
+  .inline-date-wrap span.static-date {
+    font-size: 12.5px; font-weight: 400; text-transform: none; letter-spacing: normal;
+    color: var(--ink); font-variant-numeric: tabular-nums;
+  }
+  .inline-date-wrap input[type="date"] {
+    font: inherit; font-size: 12.5px; font-weight: 400; text-transform: none; letter-spacing: normal;
+    color: var(--ink); background: var(--paper); border: 1px solid var(--panel-border);
+    border-radius: 6px; padding: 3px 6px; cursor: pointer; font-variant-numeric: tabular-nums;
+  }
+  .inline-date-wrap input[type="date"]:hover,
+  .inline-date-wrap input[type="date"]:focus { border-color: var(--accent); outline: none; }
+  .inline-date-wrap select.rel-sprint {
+    font: inherit; font-size: 12px; font-weight: 600; text-transform: none; letter-spacing: normal;
+    color: var(--ink); background: var(--paper); border: 1px solid var(--panel-border);
+    border-radius: 6px; padding: 3px 5px; cursor: pointer; max-width: 165px;
+  }
+  .inline-date-wrap select.rel-sprint:hover,
+  .inline-date-wrap select.rel-sprint:focus { border-color: var(--accent); outline: none; }
+
+  .attach-dot { position: absolute; width: 6px; height: 6px; border-radius: 50%; background: var(--road-edge); transform: translate(-50%, -50%); z-index: 4; }
+
+  .here-flag { position: absolute; transform: translate(-50%, -100%); z-index: 6; display: flex; flex-direction: column; align-items: center; }
+  .here-flag .balloon-bob { display: flex; flex-direction: column; align-items: center; animation: bob 3.4s ease-in-out infinite; transform-origin: 50% 100%; }
+  .here-flag .balloon { width: 26px; height: 35px; filter: drop-shadow(0 4px 7px rgba(0,0,0,0.26)); }
+  .here-flag .balloon .basket { fill: var(--road-edge); }
+  .here-flag .balloon .string { stroke: var(--road-edge); stroke-width: 1.2; }
+  .here-flag .label {
+    margin-top: 4px; background: var(--ink); color: var(--paper);
+    font-size: 9px; font-weight: 800; padding: 1px 6px; border-radius: 999px;
+    letter-spacing: 0.03em; white-space: nowrap;
+  }
+  @keyframes bob {
+    0%, 100% { transform: translateY(0) rotate(-2deg); }
+    50% { transform: translateY(-5px) rotate(2deg); }
+  }
+  @media (prefers-reduced-motion: reduce) { .here-flag .balloon-bob { animation: none; } }
+
+  .depot { max-width: 1180px; margin: 0 auto 60px; padding: 0 clamp(16px, 4vw, 40px); }
+  .depot h2 {
+    font-size: 13px; text-transform: uppercase; letter-spacing: 0.05em;
+    color: var(--muted); margin: 0 0 12px; display: flex; align-items: center; gap: 8px;
+  }
+  .depot h2::before { content: ""; width: 10px; height: 10px; border-radius: 2px; background: var(--tbd); display: inline-block; }
+  .depot-grid { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-start; }
+  .depot-card {
+    width: 240px; background: var(--panel); border: 1px dashed var(--panel-border);
+    border-radius: 12px; padding: 10px 12px; transition: border-color 0.12s ease;
+  }
+  .depot-card:hover { border-color: var(--accent); }
+  .depot-card h4 { margin: 0; font-size: 13.5px; line-height: 1.35; font-weight: 700; }
+  .depot-card .tbd-pill {
+    display: inline-block; margin-top: 6px; font-size: 10.5px; font-weight: 800;
+    color: var(--tbd); border: 1px solid var(--tbd); padding: 1px 7px; border-radius: 999px;
+  }
+
+  .edit-form { display: none; flex-direction: column; gap: 8px; margin-top: 8px; }
+  .edit-form.open { display: flex; }
+  .card.editing .card-body, .depot-card.editing .card-body { display: none; }
+  .edit-form label {
+    display: flex; flex-direction: column; gap: 3px;
+    font-size: 11px; color: var(--muted); font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.02em;
+  }
+  .edit-form textarea {
+    font: inherit; font-size: 13px; color: var(--ink); background: var(--paper);
+    border: 1px solid var(--panel-border); border-radius: 7px; padding: 6px 8px;
+    text-transform: none; letter-spacing: normal; font-weight: 400; resize: vertical; min-height: 44px;
+  }
+  .edit-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+  .edit-actions button {
+    font: inherit; font-size: 11.5px; font-weight: 700; padding: 5px 10px;
+    border-radius: 999px; border: 1px solid var(--panel-border); background: var(--panel);
+    color: var(--ink); cursor: pointer;
+  }
+  .edit-actions button.save { background: var(--accent); border-color: var(--accent); color: #fff9f4; }
+  .edit-actions button:hover { opacity: 0.85; }
+
+  /* ---- summary table ---- */
+  .summary { max-width: 1180px; margin: 0 auto 50px; padding: 0 clamp(16px, 4vw, 40px); }
+  .summary h2 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); margin: 0 0 12px; }
+  table.sync {
+    width: 100%; border-collapse: collapse; background: var(--panel);
+    border: 1px solid var(--panel-border); border-radius: 12px; overflow: hidden; font-size: 12.5px;
+  }
+  table.sync th, table.sync td { padding: 8px 10px; text-align: left; border-bottom: 1px solid var(--panel-border); }
+  table.sync th { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); }
+  table.sync td.num { text-align: center; font-variant-numeric: tabular-nums; font-weight: 700; }
+  table.sync tr:last-child td { border-bottom: none; }
+  table.sync a { color: var(--accent); text-decoration: none; }
+  .pill { display: inline-block; padding: 1px 7px; border-radius: 999px; font-size: 10.5px; font-weight: 800; }
+  .pill.ok { background: color-mix(in srgb, var(--ok) 18%, transparent); color: var(--ok); }
+  .pill.warn { background: color-mix(in srgb, var(--warn) 20%, transparent); color: var(--warn); }
+  .pill.over { background: color-mix(in srgb, var(--over) 18%, transparent); color: var(--over); }
+  .pill.none { background: color-mix(in srgb, var(--ink) 8%, transparent); color: var(--muted); }
+
+  .modal-backdrop { position: fixed; inset: 0; background: rgba(10,10,10,0.45); display: none; align-items: center; justify-content: center; z-index: 100; padding: 20px; }
+  .modal-backdrop.open { display: flex; }
+  .modal { background: var(--panel); border-radius: 14px; padding: 20px; width: min(560px, 100%); box-shadow: var(--shadow); max-height: 80vh; display: flex; flex-direction: column; gap: 10px; }
+  .modal h3 { margin: 0; font-size: 15px; }
+  .modal p { margin: 0; font-size: 12.5px; color: var(--muted); }
+  .modal textarea { flex: 1; min-height: 220px; font: 12px/1.5 ui-monospace, Menlo, monospace; border: 1px solid var(--panel-border); border-radius: 8px; padding: 10px; background: var(--paper); color: var(--ink); }
+  .modal .modal-actions { display: flex; justify-content: flex-end; gap: 8px; }
+  .modal .modal-actions button { font: inherit; font-size: 12.5px; font-weight: 700; padding: 6px 14px; border-radius: 999px; border: 1px solid var(--panel-border); background: var(--paper); color: var(--ink); cursor: pointer; }
+  .modal .modal-actions button.primary { background: var(--accent); border-color: var(--accent); color: #fff9f4; }
+
+  footer.credit { text-align: center; color: var(--muted); font-size: 12px; padding: 20px 20px 40px; }
+
+  @media (max-width: 720px) { .card { width: 210px; } }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <svg class="header-ribbon" id="headerRibbon" preserveAspectRatio="none"></svg>
+  <div class="title-block">
+    <div class="brand-mark">
+      <span class="wordmark">საქართველოს ბანკი · Business Manager</span>
+    </div>
+    <h1 class="heading-font">Roadmap — Q3 & Q4 2026</h1>
+    <p id="modeHint">Business Manager (ADMBM) Q3–Q4 epics — release sprint + ITV focus, გეგმიური და რეალურად დახარჯული სპრინტები.</p>
+  </div>
+  <div class="legend" id="legend"></div>
+</header>
+
+<div class="toolbar">
+  <span>Scroll the road sideways to move through the quarter.</span>
+  <button class="btn primary-toggle" id="modeToggle" type="button">Switch to edit mode</button>
+  <button class="btn" id="syncBtn" type="button">Sync from Jira</button>
+  <span id="syncState">…</span>
+  <button class="btn edit-only" id="exportBtn" type="button">Copy data as JSON</button>
+  <button class="btn edit-only" id="resetBtn" type="button">Reset all edits</button>
+  <span id="storageNotice" style="display:none;color:var(--over);flex-basis:100%;font-size:11.5px"></span>
+</div>
+
+<main class="road-wrap" id="roadWrap">
+  <div class="road-inner" id="roadInner">
+    <svg class="road-svg" id="roadSvg" preserveAspectRatio="none"></svg>
+    <div class="markers" id="markers"></div>
+  </div>
+</main>
+
+<section class="depot" id="depotSection">
+  <h2>Depot — release date to be confirmed</h2>
+  <div class="depot-grid" id="depotGrid"></div>
+</section>
+
+<section class="summary">
+  <h2>ITV focus vs. sprints — ყველა ეპიკი</h2>
+  <table class="sync">
+    <thead>
+      <tr>
+        <th>Epic</th><th>ITV idea</th>
+        <th style="text-align:center">Release sprint</th>
+        <th style="text-align:center">Actual Focus&nbsp;%</th>
+        <th style="text-align:center">Initial Duration</th>
+        <th style="text-align:center">დახარჯული სპრინტი</th>
+        <th>სპრინტები</th>
+        <th>Issues</th>
+        <th style="text-align:center">Δ</th>
+      </tr>
+    </thead>
+    <tbody id="summaryBody"></tbody>
+  </table>
+</section>
+
+<footer class="credit">Data: Jira ADMBM (board 279) + ITV · bogadm.atlassian.net · Actual Focus = <code>customfield_10305</code>, Initial Duration = <code>customfield_10490</code>, დახარჯული სპრინტები = ეპიკის უზერსთორების უნიკალური Sprint-ები</footer>
+
+<div class="modal-backdrop" id="modalBackdrop">
+  <div class="modal">
+    <h3>Roadmap data (JSON)</h3>
+    <p>Select all and copy — paste it back to Claude to bake these edits into the shared version.</p>
+    <textarea id="modalTextarea" readonly></textarea>
+    <div class="modal-actions">
+      <button id="modalCopy" type="button">Copy</button>
+      <button id="modalClose" class="primary" type="button">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  // "You are here" balloon always tracks the real calendar day of whoever opens the file.
+  const TODAY = (function () {
+    const d = new Date();
+    const p = n => String(n).padStart(2, "0");
+    return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate());
+  })();
+  const CAR_NAME = "V3";
+  const Q_START = "2026-07-01";
+  const Q_END = "2026-12-31";
+  const STORAGE_KEY = "q3-roadmap-overrides-v1";
+  const MODE_KEY = "q3-roadmap-mode-v1";
+  const JIRA_BASE = "https://bogadm.atlassian.net/browse/";
+  const CLOUD_ID = "c94a27f6-e549-4536-91dc-52842e93912d";
+  const F_SPRINT = "customfield_10020";
+  const F_ACTUAL_FOCUS = "customfield_10305";
+  const F_INIT_DURATION = "customfield_10490";
+  const F_ACT_DURATION = "customfield_10062";
+
+  const STATUS_META = {
+    "Deployed":    { color: "var(--status-deployed)",   label: "Deployed" },
+    "Done":        { color: "var(--status-done)",       label: "Done" },
+    "In Progress": { color: "var(--status-inprogress)", label: "In Progress" },
+    "Backlog":     { color: "var(--status-backlog)",    label: "Backlog" }
+  };
+
+  // ADMBM board 77 sprint calendar. S1-S4 exist in Jira; later ones are projected on the
+  // observed 2-week cadence (each sprint ends on a Monday) until the squad creates them.
+  const SPRINTS = [
+    { q: "Q3", n: 1, start: "2026-06-29", end: "2026-07-13", real: true },
+    { q: "Q3", n: 2, start: "2026-07-13", end: "2026-07-27", real: true },
+    { q: "Q3", n: 3, start: "2026-07-27", end: "2026-08-10", real: true },
+    { q: "Q3", n: 4, start: "2026-08-10", end: "2026-08-24", real: true },
+    { q: "Q3", n: 5, start: "2026-08-24", end: "2026-09-07", real: false },
+    { q: "Q3", n: 6, start: "2026-09-07", end: "2026-09-21", real: false },
+    { q: "Q4", n: 1, start: "2026-09-21", end: "2026-10-05", real: false },
+    { q: "Q4", n: 2, start: "2026-10-05", end: "2026-10-19", real: false },
+    { q: "Q4", n: 3, start: "2026-10-19", end: "2026-11-02", real: false },
+    { q: "Q4", n: 4, start: "2026-11-02", end: "2026-11-16", real: false },
+    { q: "Q4", n: 5, start: "2026-11-16", end: "2026-11-30", real: false },
+    { q: "Q4", n: 6, start: "2026-11-30", end: "2026-12-14", real: false },
+    { q: "Q4", n: 7, start: "2026-12-14", end: "2026-12-28", real: false }
+  ];
+  SPRINTS.forEach((s, i) => {
+    s.i = i;
+    s.code = s.q + " S" + s.n;
+    s.name = "ADMBM- 2026 " + s.q + " Sprint " + s.n;
+  });
+  function sprintByName(name) {
+    if (!name) return null;
+    const exact = SPRINTS.find(s => s.name === name);
+    if (exact) return exact;
+    const m = /Q(\d)\s*Sprint\s*(\d+)/.exec(String(name));
+    return m ? (SPRINTS.find(s => s.q === "Q" + m[1] && s.n === parseInt(m[2], 10)) || null) : null;
+  }
+  function sprintByCode(code) { return SPRINTS.find(s => s.code === code) || null; }
+  function sprintByIndex(i) { return SPRINTS[i] || null; }
+  function sprintForDate(iso) {
+    if (!iso) return null;
+    return SPRINTS.find(s => iso > s.start && iso <= s.end) || (iso <= SPRINTS[0].end ? SPRINTS[0] : SPRINTS[SPRINTS.length - 1]);
+  }
+  // release date = end of the chosen release sprint; manual date is the fallback
+  function relDate(e) {
+    const s = sprintByName(e.relSprint);
+    return s ? s.end : e.date;
+  }
+  function relLabel(e) {
+    const s = sprintByName(e.relSprint);
+    if (!s) return null;
+    return s.code + (s.real ? "" : " ⌁");
+  }
+
+  // Q3 2026 epics. date/comment are PO-owned (editable). itv* fields are refreshed live from Jira;
+  // the values below are the last known snapshot so the file still reads correctly offline.
+  const EPICS = [
+    { key: "ADMBM-3792", title: "Jira service desk საკონტაქტო მეილის მითითების შესაძლებლობა", status: "Backlog",     date: "2026-07-31", comment: null, side: "T",
+      itv: "ITV-10314", focus: 30, plan: 1,   spent: 1, sprints: ["ADMBM- 2026 Q3 Sprint 4"] },
+    { key: "ADMBM-3802", title: "New colors and fonts", status: "In Progress", date: "2026-07-31", comment: null, side: "B",
+      itv: "ITV-11426", focus: 20, plan: 1,   spent: 1, sprints: ["ADMBM- 2026 Q3 Sprint 3"] },
+    { key: "ADMBM-3791", title: "Smart one click offers II phase — პერსონალიზებული ავტო-გენერაცია", status: "In Progress", date: "2026-08-15", comment: null, side: "T",
+      itv: "ITV-9250",  focus: 50, plan: 2.5, spent: 4, sprints: ["ADMBM- 2026 Q2 Sprint 6","ADMBM- 2026 Q3 Sprint 1","ADMBM- 2026 Q3 Sprint 2","ADMBM- 2026 Q3 Sprint 3"] },
+    { key: "ADMBM-3790", title: "Push in m4b", status: "Backlog", date: "2026-08-15", comment: null, side: "B",
+      itv: "ITV-9126",  focus: 30, plan: 1,   spent: 0, sprints: [] },
+    { key: "ADMBM-3795", title: "Offer analytics", status: "In Progress", date: "2026-08-31", comment: null, side: "T",
+      itv: "ITV-11517", focus: 50, plan: 2,   spent: 2, sprints: ["ADMBM- 2026 Q3 Sprint 2","ADMBM- 2026 Q3 Sprint 3"] },
+    { key: "ADMBM-3908", title: "1 click approved offers", status: "In Progress", date: null, comment: "Offer auto approval — white list, green checkmark",
+      itv: "ITV-9252",  focus: 50, plan: 2,   spent: 2, sprints: ["ADMBM- 2026 Q3 Sprint 3","ADMBM- 2026 Q3 Sprint 4"] },
+    { key: "ADMBM-3800", title: "Cmaas migration to AWS", status: "In Progress", date: null, comment: null,
+      itv: "ITV-10137", focus: 20, plan: 2,   spent: 2, sprints: ["ADMBM- 2026 Q3 Sprint 2","ADMBM- 2026 Q3 Sprint 3"] },
+    { key: "ADMBM-3853", title: "All cards Offer RFD", status: "Backlog", date: null, comment: null,
+      itv: "ITV-10645", focus: null, plan: null, spent: 0, sprints: [] },
+    { key: "ADMBM-3793", title: "Student and School offering — simultaneous registration", status: "Deployed", date: null, comment: null,
+      itv: "ITV-10644", focus: 50, plan: 1,   spent: 1, sprints: ["ADMBM- 2026 Q3 Sprint 1"] },
+    { key: "ADMBM-3801", title: "Ads manager V2", status: "Backlog", date: null, comment: "Q4 2026",
+      itv: null, focus: null, plan: null, spent: 0, sprints: [] },
+    { key: null, title: "New dashboard", status: "Backlog", date: null, comment: "Added manually — not yet in Jira",
+      itv: null, focus: null, plan: null, spent: null, sprints: [] }
+  ];
+  /* Baked snapshot of each epic's child issues (Jira, 3 Aug 2026) so the plain HTML file shows
+     the list too. In the Cowork artifact these get replaced by live data on every open.
+     Row layout: [key suffix, type, status, statusCategory, story points, parent story, summary] */
+  function X(rows) {
+    return rows.map(r => ({
+      key: "ADMBM-" + r[0], type: r[1], status: r[2], cat: r[3],
+      points: r[4], of: r[5] ? "ADMBM-" + r[5] : null, sub: !!r[5], summary: r[6]
+    }));
+  }
+  const ISSUES = {
+    "ADMBM-3792": X([
+      ["3858", "Story", "Backlog", "new", null, null, "არაფინანსურ მეილზე ნოტიფიკაცია"],
+      ["3910", "Sub-task", "Backlog", "new", null, "3858", "BE — notification სერვისის გამდიდრება დამატებითი პარამეტრით"]
+    ]),
+    "ADMBM-3793": X([
+      ["3796", "Story", "Deployed", "done", 8, null, "student and school card გაერთიანებული ოფერი"],
+      ["3817", "Defect", "Done", "done", null, "3796", "დრაფტიდან ორივე ოფერს student scool გააქტიურების პრობლემა"],
+      ["3818", "Defect", "Done", "done", null, "3796", "DISCOUNT ბენეფიტ ტიპზე არ მთავაზობს მეორე ოფერის შექმნას"],
+      ["3823", "Defect", "Done", "done", null, "3796", "დაფინანსებული ან თანადაფინანსებული ვანქლიქის დროს არ უნდა იყოს ორი საბმიტი"],
+      ["3827", "Defect", "Done", "done", null, "3796", "4-ჯერ დამასაბმითებინა"]
+    ]),
+    "ADMBM-3795": X([
+      ["3842", "Story", "In Progress", "indeterminate", 8, null, "შეთავაზების ანალიტიკა / Drill downs"],
+      ["3843", "Story", "Testing", "indeterminate", 13, null, "იმფრეშენების ჩარტის რედიზაინი"],
+      ["3905", "Sub-task", "Testing", "indeterminate", null, "3843", "[FE] charts"],
+      ["3914", "Defect", "Ready for Testing", "indeterminate", null, "3843", "სერვისს არ მოყვება აგრეგირებული ჩანაწერი CTR-სთვის"],
+      ["3916", "Defect", "To Do", "new", null, "3843", "ჩარტში მაუსით გადასქროლვისას ირევა ყველაფერი"],
+      ["3875", "Design", "Done", "done", null, null, "Offer Analytics"],
+      ["3893", "Story", "Backlog", "new", 8, null, "შეთავაზების ანალიტიკა [BE]"],
+      ["3896", "Story", "In Progress", "indeterminate", 3, null, "offer analytic page / general changes"],
+      ["3898", "Story", "Backlog", "new", 3, null, "offer analytics data on prod"]
+    ]),
+    "ADMBM-3800": X([
+      ["3881", "Story", "In Progress", "indeterminate", 5, null, "Cmaas to AWS [BE]"]
+    ]),
+    "ADMBM-3802": X([
+      ["3862", "Story", "Done", "done", 3, null, "Fake sandbox environment"],
+      ["3895", "Story", "Done", "done", 2, null, "Cookies changes"]
+    ]),
+    "ADMBM-3908": X([
+      ["3860", "Story", "Done", "done", 3, null, "ტექსტის ველი დადიზეიბლება"],
+      ["3883", "Story", "Ready for Testing", "indeterminate", 5, null, "Gemini Text improvement"],
+      ["3885", "Sub-task", "Ready for Testing", "indeterminate", null, "3883", "Repeatable Type in Gemini text generator"],
+      ["3886", "Sub-task", "Done", "done", null, "3883", "PLUS უნდა ეწეროს სულ დიდი ასოებით"],
+      ["3889", "Sub-task", "Done", "done", null, "3883", "AMEX-ს უნდა მოჰყვებოდეს საკრედიტო ბარათი ტექსტში"],
+      ["3891", "Sub-task", "Ready for Testing", "indeterminate", null, "3883", "შეზღუდვები"],
+      ["3892", "Sub-task", "Ready for Testing", "indeterminate", null, "3883", "გადახდის მეთოდები"],
+      ["3907", "Story", "Backlog", "new", null, null, "white list companies"]
+    ]),
+    "ADMBM-3791": X([
+      ["3776", "Story", "Deployed", "done", 3, null, "New one clicks commission / commission cap"],
+      ["3809", "Defect", "Done", "done", null, "3776", "თანადაფინანსებული ოფერის საკომისიოს კალკულაცია"],
+      ["3783", "Story", "Deployed", "done", 13, null, "One click offer mapping for M4b"],
+      ["3854", "Defect", "Done", "done", null, "3783", "არა სტატიკურ თარიღებზე ცვლილება არ არის შესაძლებელი"],
+      ["3855", "Defect", "Done", "done", null, "3783", "როცა თარიღები არ არის მითითებული მაინც არ არის შესაძლებელი ცვლილება"],
+      ["3785", "Story", "Done", "done", 8, null, "Template automatisation from ads manager"],
+      ["3798", "Story", "Done", "done", 8, null, "b2b one clicks"],
+      ["3831", "Defect", "Done", "done", null, "3798", "საკომისიოს პროცენტს არასწორად ითვლის"],
+      ["3832", "Defect", "Done", "done", null, "3798", "ლიდების რეგისტრაცია B2B ვანქლიქზე"],
+      ["3835", "Defect", "Done", "done", null, "3798", "არამერჩანტულ ვანქლიქზე მაინც მერჩანტულია მონიშნული"],
+      ["3838", "Defect", "Done", "done", null, "3798", "დაფიქსულ დეითებს არ ითვალისწინებს"],
+      ["3814", "Story", "In Progress", "indeterminate", 13, null, "Smart one click offers"],
+      ["3849", "Sub-task", "Ready for Testing", "indeterminate", null, "3814", "ცხრილების გამზადება ტემპლეტების შესაქმნელად"],
+      ["3850", "Sub-task", "In Progress", "indeterminate", null, "3814", "ტემპლეიტების შესაქმნელი ჯობი"],
+      ["3852", "Sub-task", "Backlog", "new", null, "3814", "ლისტის სერვისის გამდიდრება ოფერს ჰაბიდან მოსული შექმნის მიზეზით"],
+      ["3836", "Story", "Done", "done", 1, null, "B2B ვანქლიქზე ლიდების დეფოლტად ჩართვა და საკონტაქტო ნომრის სავალდებულოობის მოხსნა"],
+      ["3848", "Story", "Done", "done", 8, null, "Smart one click data logics"],
+      ["3851", "Story", "Done", "done", 5, null, "Smart one click jobs"],
+      ["3897", "Story", "Backlog", "new", 3, null, "smart 1 clicks data on prod"]
+    ])
+  };
+
+  // Release sprint per epic — derived from the planned release date and the sprint its stories
+  // actually sit in; adjust in edit mode (dropdown on each card).
+  const RELEASE_SPRINT = {
+    "ADMBM-3792": "Q3 S4", "ADMBM-3802": "Q3 S3", "ADMBM-3791": "Q3 S4", "ADMBM-3790": "Q3 S4",
+    "ADMBM-3795": "Q3 S5", "ADMBM-3908": "Q3 S4", "ADMBM-3800": "Q3 S3", "ADMBM-3853": null,
+    "ADMBM-3793": "Q3 S1", "ADMBM-3801": null
+  };
+  EPICS.forEach((e, i) => {
+    e.id = e.key || ("manual-" + i);
+    e.side = e.side || (i % 2 === 0 ? "T" : "B");
+    const s = e.key ? sprintByCode(RELEASE_SPRINT[e.key]) : null;
+    e.relSprint = s ? s.name : null;
+    e.issues = (e.key && ISSUES[e.key]) ? ISSUES[e.key] : [];
+    e.issuesLoaded = !!e.key;
+  });
+
+  // ---- localStorage overrides (date/comment only) ----
+  function loadOverrides() {
+    try { const raw = localStorage.getItem(STORAGE_KEY); return raw ? JSON.parse(raw) : {}; }
+    catch (err) { return {}; }
+  }
+  let storageOK = true;
+  function saveOverrides(o) {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(o));
+      if (localStorage.getItem(STORAGE_KEY) === null) throw new Error("write ignored");
+      storageOK = true;
+    } catch (err) {
+      storageOK = false;
+      console.warn("localStorage unavailable — edits stay in this tab only", err);
+    }
+    updateStorageNotice();
+  }
+  function updateStorageNotice() {
+    const n = document.getElementById("storageNotice");
+    if (!n) return;
+    n.style.display = storageOK ? "none" : "";
+    n.textContent = "⚠ ცვლილება ამ ჩანართის დახურვამდე შემოინახება (ბრაუზერი storage-ს ბლოკავს — ფაილი file:// მისამართიდანაა გახსნილი). მუდმივად შესანახად გამოიყენე „Copy data as JSON“ ან artefact.";
+  }
+  const overrides = loadOverrides();
+  EPICS.forEach(e => {
+    const o = overrides[e.id];
+    if (o) {
+      e.date = o.date ?? e.date;
+      e.comment = o.comment ?? e.comment;
+      if (o.relSprint !== undefined) e.relSprint = o.relSprint;
+    }
+  });
+
+  let mode = "view";
+  try { mode = localStorage.getItem(MODE_KEY) || "view"; } catch (err) {}
+
+  const activeStatuses = new Set(Object.keys(STATUS_META));
+
+  function dayNum(iso) { return Math.floor(Date.parse(iso + "T00:00:00Z") / 86400000); }
+  const qStartDay = dayNum(Q_START), qEndDay = dayNum(Q_END), qSpan = qEndDay - qStartDay;
+  function tFor(iso) { return Math.min(1, Math.max(0, (dayNum(iso) - qStartDay) / qSpan)); }
+  function fmtDate(iso) {
+    const d = new Date(iso + "T00:00:00Z");
+    return d.toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" });
+  }
+  function escapeHtml(s) { const d = document.createElement("div"); d.textContent = s; return d.innerHTML; }
+  function num(v) { return (v === null || v === undefined) ? "—" : v; }
+  function shortSprint(name) { return String(name).replace(/^ADMBM-\s*/, "").replace(/^2026\s*/, ""); }
+
+  const TYPE_ABBR = {
+    "Story": "S", "Maintenance": "M", "Bug": "BUG", "Defect": "DEF", "Research": "R",
+    "Consultation": "C", "Standalone Test": "ST", "Sub-task": "T", "Task": "T", "Test": "TST",
+    "Design": "DSN"
+  };
+  const CAT_COLOR = { "done": "var(--status-done)", "indeterminate": "var(--status-inprogress)", "new": "var(--status-backlog)" };
+  function issueColor(it) {
+    if (it.status === "Deployed") return "var(--status-deployed)";
+    return CAT_COLOR[it.cat] || "var(--muted)";
+  }
+  // keep each sub-task / Defect directly under the story it belongs to
+  function issueSort(a, b) {
+    const ka = a.sub && a.of ? a.of : a.key;
+    const kb = b.sub && b.of ? b.of : b.key;
+    const c = ka.localeCompare(kb, undefined, { numeric: true });
+    if (c) return c;
+    return ((a.sub ? 1 : 0) - (b.sub ? 1 : 0)) || a.key.localeCompare(b.key, undefined, { numeric: true });
+  }
+
+  function issuesBlock(epic) {
+    const list = epic.issues || [];
+    if (!epic.key) return "";
+    if (!list.length) {
+      return `<details class="issues"><summary>Issues (0)</summary>
+        <div class="empty">${epic.issuesLoaded ? "მიბმული სთორი/თასქი/ბაგი არ არის" : "ჩამონათვალი ჯირადან იტვირთება…"}</div></details>`;
+    }
+    const counts = {};
+    list.forEach(i => { const a = TYPE_ABBR[i.type] || i.type; counts[a] = (counts[a] || 0) + 1; });
+    const chips = Object.keys(counts).sort().map(a =>
+      `<span class="chip${(a === "BUG" || a === "DEF") ? " bug" : ""}">${a} ${counts[a]}</span>`).join("");
+    const rows = list.map(i => {
+      const col = issueColor(i);
+      return `<li${i.sub ? ' class="i-sub"' : ""}>
+        <span class="i-head">
+          <span class="i-dot" style="background:${col}"></span>
+          <a href="${JIRA_BASE + i.key}" target="_blank" rel="noopener noreferrer">${i.key}</a>
+          <span class="i-type">${TYPE_ABBR[i.type] || escapeHtml(i.type || "")}</span>
+          <span class="i-status" style="color:${col};background:color-mix(in srgb, ${col} 16%, transparent)">${escapeHtml(i.status || "—")}</span>
+          ${i.points != null ? `<span class="i-pts">${i.points} sp</span>` : ""}
+        </span>
+        <span class="i-sum">${escapeHtml(i.summary || "")}</span>
+      </li>`;
+    }).join("");
+    return `<details class="issues">
+      <summary>Issues (${list.length})<span class="type-chips">${chips}</span></summary>
+      <ul class="issue-list">${rows}</ul>
+    </details>`;
+  }
+
+  function deltaClass(e) {
+    if (e.plan == null || e.spent == null || e.spent === 0) return "none";
+    if (e.spent <= e.plan) return "ok";
+    if (e.spent <= e.plan + 0.5) return "warn";
+    return "over";
+  }
+
+  // ---- Static winding road ----
+  const CENTER_Y = 620, AMPLITUDE = 34, LEFT_PAD = 160, TOTAL_WIDTH = 4400, ROAD_HEIGHT = 1240, BEND_COUNT = 6;
+  function pointForT(t) {
+    const x = LEFT_PAD + t * (TOTAL_WIDTH - LEFT_PAD * 2);
+    const y = CENTER_Y + AMPLITUDE * Math.sin(t * Math.PI * BEND_COUNT * 0.5 + 0.4);
+    return { x, y };
+  }
+  const controlPoints = [];
+  const CTRL_N = 24;
+  for (let i = 0; i <= CTRL_N; i++) controlPoints.push(pointForT(i / CTRL_N));
+  function smoothPath(pts) {
+    let d = `M ${pts[0].x} ${pts[0].y} `;
+    for (let i = 0; i < pts.length - 1; i++) {
+      const p0 = pts[i], p1 = pts[i + 1];
+      const mx = (p0.x + p1.x) / 2, my = (p0.y + p1.y) / 2;
+      d += `Q ${p0.x} ${p0.y} ${mx} ${my} `;
+    }
+    const last = pts[pts.length - 1];
+    return d + `T ${last.x} ${last.y} `;
+  }
+  const pathD = smoothPath(controlPoints);
+
+  const roadWrap = document.getElementById("roadWrap");
+  const roadInner = document.getElementById("roadInner");
+  roadInner.style.width = TOTAL_WIDTH + "px";
+  roadInner.style.height = ROAD_HEIGHT + "px";
+  const svg = document.getElementById("roadSvg");
+  svg.setAttribute("viewBox", `0 0 ${TOTAL_WIDTH} ${ROAD_HEIGHT}`);
+  svg.style.width = TOTAL_WIDTH + "px";
+  svg.style.height = ROAD_HEIGHT + "px";
+
+  const ns = "http://www.w3.org/2000/svg";
+  function el(tag, attrs) { const n = document.createElementNS(ns, tag); for (const k in attrs) n.setAttribute(k, attrs[k]); return n; }
+
+  (function renderHeaderRibbon() {
+    const ribbon = document.getElementById("headerRibbon");
+    const w = 1000, h = 220;
+    ribbon.setAttribute("viewBox", `0 0 ${w} ${h}`);
+    function loopPath(seed) {
+      const pts = [], steps = 7;
+      for (let i = 0; i <= steps; i++) {
+        const t = i / steps, x = t * w;
+        const y = h * 0.5 + Math.sin(t * Math.PI * 2.4 + seed) * (h * 0.32) + Math.sin(t * Math.PI * 5 + seed * 1.7) * (h * 0.12);
+        pts.push({ x, y });
+      }
+      let d = `M ${pts[0].x} ${pts[0].y} `;
+      for (let i = 0; i < pts.length - 1; i++) {
+        const p0 = pts[i], p1 = pts[i + 1];
+        const mx = (p0.x + p1.x) / 2, my = (p0.y + p1.y) / 2;
+        d += `Q ${p0.x} ${p0.y} ${mx} ${my} `;
+      }
+      return d;
+    }
+    [0.4, 2.1, 4.0].forEach((seed, i) => {
+      ribbon.appendChild(el("path", { d: loopPath(seed), fill: "none", stroke: "var(--brand-cream)", "stroke-width": 2.5 - i * 0.4, "stroke-linecap": "round", opacity: 0.55 - i * 0.12 }));
+    });
+  })();
+
+  svg.appendChild(el("rect", { x: 0, y: 0, width: TOTAL_WIDTH, height: ROAD_HEIGHT, fill: "var(--paper)" }));
+  svg.appendChild(el("path", { d: pathD, fill: "none", stroke: "var(--road-edge)", "stroke-width": 40, "stroke-linecap": "round", "stroke-linejoin": "round" }));
+  svg.appendChild(el("path", { d: pathD, fill: "none", stroke: "var(--road)", "stroke-width": 34, "stroke-linecap": "round", "stroke-linejoin": "round" }));
+  svg.appendChild(el("path", { d: pathD, fill: "none", stroke: "var(--road-line)", "stroke-width": 2.5, "stroke-dasharray": "14 12", "stroke-linecap": "round", opacity: 0.9 }));
+
+  const measurePath = el("path", { d: pathD });
+  svg.appendChild(measurePath);
+  measurePath.style.display = "none";
+  const totalLen = measurePath.getTotalLength();
+  function anchorForT(t) { const p = measurePath.getPointAtLength(t * totalLen); return { x: p.x, y: p.y }; }
+
+  // month ticks + labels across Q3 and Q4, with a divider where Q4 starts
+  [
+    ["2026-07-01", "Jul"], ["2026-08-01", "Aug"], ["2026-09-01", "Sep"],
+    ["2026-10-01", "Oct"], ["2026-11-01", "Nov"], ["2026-12-01", "Dec"]
+  ].forEach(([iso, label]) => {
+    const a = anchorForT(tFor(iso));
+    const isQuarterStart = iso === "2026-10-01";
+    svg.appendChild(el("circle", { cx: a.x, cy: a.y, r: isQuarterStart ? 7 : 4, fill: "var(--road-line)" }));
+    const t = el("text", {
+      x: a.x, y: a.y + 40, "text-anchor": "middle",
+      fill: "var(--muted)", "font-size": isQuarterStart ? 20 : 16,
+      "font-weight": isQuarterStart ? 800 : 700, "letter-spacing": "0.08em"
+    });
+    t.textContent = isQuarterStart ? "Q4 · " + label : label;
+    svg.appendChild(t);
+    if (isQuarterStart) {
+      svg.appendChild(el("line", {
+        x1: a.x, y1: 120, x2: a.x, y2: ROAD_HEIGHT - 120,
+        stroke: "var(--panel-border)", "stroke-width": 2, "stroke-dasharray": "8 8"
+      }));
+    }
+  });
+  (function q3Label() {
+    const a = anchorForT(tFor("2026-07-01"));
+    const t = el("text", {
+      x: a.x, y: a.y - 40, "text-anchor": "middle",
+      fill: "var(--muted)", "font-size": 20, "font-weight": 800, "letter-spacing": "0.08em"
+    });
+    t.textContent = "Q3";
+    svg.appendChild(t);
+  })();
+
+  const dynamicSvg = el("g", { id: "dynamicSvg" });
+  svg.appendChild(dynamicSvg);
+
+  const markersEl = document.getElementById("markers");
+  markersEl.style.width = TOTAL_WIDTH + "px";
+  markersEl.style.height = ROAD_HEIGHT + "px";
+  const depotGrid = document.getElementById("depotGrid");
+  const legend = document.getElementById("legend");
+  const summaryBody = document.getElementById("summaryBody");
+
+  function persist(epic) {
+    overrides[epic.id] = { date: epic.date, comment: epic.comment, relSprint: epic.relSprint };
+    saveOverrides(overrides);
+  }
+
+  function sprintSelect(epic) {
+    const cur = sprintByName(epic.relSprint);
+    const opts = [`<option value=""${cur ? "" : " selected"}>— TBD —</option>`].concat(
+      SPRINTS.map(s => `<option value="${s.i}"${cur && cur.i === s.i ? " selected" : ""}>${s.code} · ${fmtDate(s.end)}${s.real ? "" : " ⌁"}</option>`)
+    ).join("");
+    return `<select class="rel-sprint">${opts}</select>`;
+  }
+  function attachSprintSelect(container, epic) {
+    const sel = container.querySelector(".rel-sprint");
+    if (!sel) return;
+    sel.addEventListener("click", ev => ev.stopPropagation());
+    sel.addEventListener("change", () => {
+      const s = sel.value === "" ? null : sprintByIndex(parseInt(sel.value, 10));
+      epic.relSprint = s ? s.name : null;
+      if (s) epic.date = s.end;
+      persist(epic);
+      renderAll();
+    });
+  }
+
+  function buildEditForm(epic) {
+    const form = document.createElement("div");
+    form.className = "edit-form";
+    form.innerHTML = `
+      <label>Comment
+        <textarea class="f-comment" rows="2" placeholder="Optional note...">${epic.comment ? escapeHtml(epic.comment) : ""}</textarea>
+      </label>
+      <div class="edit-actions">
+        <button type="button" class="save">Save</button>
+        <button type="button" class="cancel">Cancel</button>
+      </div>`;
+    form.querySelector(".save").addEventListener("click", ev => {
+      ev.stopPropagation();
+      epic.comment = form.querySelector(".f-comment").value.trim() || null;
+      persist(epic); renderAll();
+    });
+    form.querySelector(".cancel").addEventListener("click", ev => { ev.stopPropagation(); renderAll(); });
+    form.querySelector(".f-comment").addEventListener("click", ev => ev.stopPropagation());
+    return form;
+  }
+
+  function attachInlineDate(container, epic) {
+    const input = container.querySelector(".inline-date");
+    if (!input) return;
+    input.addEventListener("click", ev => ev.stopPropagation());
+    input.addEventListener("change", () => { epic.date = input.value || null; persist(epic); renderAll(); });
+  }
+
+  function cardTopRow(epic, meta) {
+    const jiraLink = epic.key ? `<a class="icon-btn" href="${JIRA_BASE + epic.key}" target="_blank" rel="noopener noreferrer" title="Open in Jira">↗</a>` : "";
+    const editBtn = mode === "edit" ? `<button type="button" class="icon-btn edit-toggle" title="Edit comment">✎</button>` : "";
+    return `<div class="top-row">
+      <span class="dot" style="background:${meta.color}"></span>
+      <span class="key-label">${epic.key || "—"} · ${meta.label}</span>
+      ${jiraLink}${editBtn}
+    </div>`;
+  }
+
+  function itvBlock(epic) {
+    if (!epic.itv) return `<div class="itv"><span class="no-itv">ITV ინიციატივა მიბმული არ არის</span></div>`;
+    const cls = deltaClass(epic);
+    const sprintTxt = (epic.sprints && epic.sprints.length)
+      ? `<div class="sprint-list">${epic.sprints.map(shortSprint).map(escapeHtml).join(" · ")}</div>`
+      : `<div class="sprint-list">სპრინტში ჯერ არ არის შესული</div>`;
+    return `<div class="itv">
+      <div class="itv-head">ITV · <a href="${JIRA_BASE + epic.itv}" target="_blank" rel="noopener noreferrer">${epic.itv}</a></div>
+      <div class="metrics">
+        <div class="metric"><span class="m-lbl">Focus</span><span class="m-val">${epic.focus == null ? "—" : epic.focus + "%"}</span></div>
+        <div class="metric"><span class="m-lbl">Plan</span><span class="m-val">${num(epic.plan)}</span></div>
+        <div class="metric actual ${cls}"><span class="m-lbl">დახარჯ.</span><span class="m-val">${num(epic.spent)}</span></div>
+      </div>
+      ${sprintTxt}
+    </div>`;
+  }
+
+  // vertical space already taken on each side of a given release point, so epics sharing a
+  // date stack outward instead of covering each other
+  let stackUsed = {};
+
+  function renderRoadCard(epic) {
+    const rd = relDate(epic);
+    const anchor = anchorForT(tFor(rd));
+    const isTop = epic.side !== "B";
+    const cardWidth = 250;
+    const GAP_TOP = 46, GAP_BOTTOM = 46, STACK_GAP = 12;
+    const cardLeft = anchor.x - cardWidth / 2;
+    const meta = STATUS_META[epic.status] || { color: "var(--muted)", label: epic.status };
+
+    const key = rd + "|" + (isTop ? "T" : "B");
+    const used = stackUsed[key] || 0;
+    const cardTop = isTop
+      ? anchor.y - GAP_TOP - used
+      : anchor.y + GAP_BOTTOM + used;
+
+    dynamicSvg.appendChild(el("path", {
+      d: `M ${anchor.x} ${anchor.y} L ${anchor.x} ${cardTop}`,
+      fill: "none", stroke: "var(--panel-border)", "stroke-width": 2, "stroke-dasharray": "3 4"
+    }));
+
+    // dot, date tag and tree are drawn once per release point (first card of the group)
+    if (!epic._groupFollower) {
+      const treeY = anchor.y - 14;
+      const g = el("g", {});
+      g.appendChild(el("rect", { x: anchor.x - 2, y: treeY - 4, width: 4, height: 16, rx: 1.5, fill: "var(--road-edge)", opacity: 0.55 }));
+      g.appendChild(el("circle", { cx: anchor.x, cy: treeY - 9, r: 13, fill: "var(--verge-2)", opacity: 0.9 }));
+      g.appendChild(el("circle", { cx: anchor.x - 7, cy: treeY - 3, r: 8, fill: "var(--verge-2)", opacity: 0.75 }));
+      g.appendChild(el("circle", { cx: anchor.x + 7, cy: treeY - 3, r: 8, fill: "var(--verge-2)", opacity: 0.75 }));
+      dynamicSvg.appendChild(g);
+
+      const dot = document.createElement("div");
+      dot.className = "attach-dot";
+      dot.style.left = anchor.x + "px";
+      dot.style.top = anchor.y + "px";
+      markersEl.appendChild(dot);
+
+      const tag = document.createElement("div");
+      tag.className = "date-tag";
+      tag.style.left = anchor.x + "px";
+      tag.style.top = (anchor.y + 22) + "px";
+      tag.textContent = (sprintByName(epic.relSprint) ? sprintByName(epic.relSprint).code + " · " : "") + fmtDate(rd);
+      markersEl.appendChild(tag);
+    }
+
+    const card = document.createElement("div");
+    card.className = "card";
+    card.style.left = cardLeft + "px";
+    card.style.top = cardTop + "px";
+    if (isTop) card.style.transform = "translateY(-100%)";
+    card.dataset.status = epic.status;
+
+    const relField = mode === "edit"
+      ? sprintSelect(epic)
+      : `<span class="static-date">${relLabel(epic) ? escapeHtml(relLabel(epic)) + " · " : ""}${fmtDate(rd)}</span>`;
+
+    const body = document.createElement("div");
+    body.className = "card-body";
+    body.innerHTML = `
+      ${cardTopRow(epic, meta)}
+      <h4>${escapeHtml(epic.title)}</h4>
+      <div class="inline-date-wrap">Release ${relField}</div>
+      ${itvBlock(epic)}
+      ${issuesBlock(epic)}
+      ${epic.comment ? `<div class="comment">${escapeHtml(epic.comment)}</div>` : ""}`;
+    card.appendChild(body);
+    if (mode === "edit") {
+      attachSprintSelect(body, epic);
+      const form = buildEditForm(epic);
+      card.appendChild(form);
+      body.querySelector(".edit-toggle").addEventListener("click", ev => {
+        ev.stopPropagation(); card.classList.add("editing"); form.classList.add("open");
+      });
+    }
+    markersEl.appendChild(card);
+    // reserve the space this card just took, so the next one on the same date stacks past it
+    stackUsed[key] = used + card.offsetHeight + STACK_GAP;
+  }
+
+  function renderDepotCard(epic) {
+    const meta = STATUS_META[epic.status] || { color: "var(--muted)", label: epic.status };
+    const card = document.createElement("div");
+    card.className = "depot-card";
+    card.dataset.status = epic.status;
+
+    const dateField = mode === "edit"
+      ? `<div class="inline-date-wrap">Release ${sprintSelect(epic)}</div>` : "";
+
+    const body = document.createElement("div");
+    body.className = "card-body";
+    body.innerHTML = `
+      ${cardTopRow(epic, meta)}
+      <h4>${escapeHtml(epic.title)}</h4>
+      ${itvBlock(epic)}
+      ${issuesBlock(epic)}
+      ${epic.comment ? `<div class="comment">${escapeHtml(epic.comment)}</div>` : ""}
+      ${dateField}
+      <div class="tbd-pill">Date TBD</div>`;
+    card.appendChild(body);
+    if (mode === "edit") {
+      attachSprintSelect(body, epic);
+      const form = buildEditForm(epic);
+      card.appendChild(form);
+      body.querySelector(".edit-toggle").addEventListener("click", ev => {
+        ev.stopPropagation(); card.classList.add("editing"); form.classList.add("open");
+      });
+    }
+    depotGrid.appendChild(card);
+  }
+
+  function renderBalloon() {
+    const carAnchor = anchorForT(tFor(TODAY));
+    const balloonLift = 30;
+    dynamicSvg.appendChild(el("path", {
+      d: `M ${carAnchor.x} ${carAnchor.y} L ${carAnchor.x} ${carAnchor.y - balloonLift + 8}`,
+      fill: "none", stroke: "var(--road-edge)", "stroke-width": 1.5, "stroke-dasharray": "2 5", opacity: 0.7
+    }));
+    dynamicSvg.appendChild(el("circle", { cx: carAnchor.x, cy: carAnchor.y, r: 5, fill: "var(--accent)" }));
+
+    const car = document.createElement("div");
+    car.className = "here-flag";
+    car.style.left = carAnchor.x + "px";
+    car.style.top = (carAnchor.y - balloonLift) + "px";
+    car.innerHTML = `<div class="balloon-bob">
+      <svg class="balloon" viewBox="0 0 46 64" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="balloonStripes" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stop-color="#ff6a3d"></stop>
+            <stop offset="20%" stop-color="#f4d35e"></stop>
+            <stop offset="40%" stop-color="#2f9e8f"></stop>
+            <stop offset="60%" stop-color="#5b8c3e"></stop>
+            <stop offset="80%" stop-color="#7c6fd8"></stop>
+            <stop offset="100%" stop-color="#e8557a"></stop>
+          </linearGradient>
+        </defs>
+        <path fill="url(#balloonStripes)" d="M23 1 C36 1 42 16 42 27 C42 40 34 46 23 46 C12 46 4 40 4 27 C4 16 10 1 23 1 Z"></path>
+        <path fill="none" stroke="rgba(0,0,0,0.15)" stroke-width="1" d="M23 1 C18 14 18 34 23 46 M23 1 C28 14 28 34 23 46 M4 27 C14 22 32 22 42 27"></path>
+        <path fill="var(--road-edge)" opacity="0.85" d="M17 46 L29 46 L26 51 L20 51 Z"></path>
+        <line class="string" x1="18" y1="47" x2="14" y2="55"></line>
+        <line class="string" x1="28" y1="47" x2="32" y2="55"></line>
+        <rect class="basket" x="13" y="55" width="20" height="7" rx="2"></rect>
+      </svg>
+      <div class="label">${CAR_NAME} · ${fmtDate(TODAY)}</div>
+    </div>`;
+    markersEl.appendChild(car);
+  }
+
+  function summaryChips(e) {
+    const list = e.issues || [];
+    if (!list.length) return `<span style="color:var(--muted)">—</span>`;
+    const counts = {};
+    list.forEach(i => { const a = TYPE_ABBR[i.type] || i.type; counts[a] = (counts[a] || 0) + 1; });
+    return `<span class="type-chips" style="margin:0">` + Object.keys(counts).sort().map(a =>
+      `<span class="chip${(a === "BUG" || a === "DEF") ? " bug" : ""}">${a} ${counts[a]}</span>`).join("") + `</span>`;
+  }
+
+  function renderSummary() {
+    summaryBody.innerHTML = "";
+    EPICS.forEach(e => {
+      const cls = deltaClass(e);
+      const delta = (e.plan != null && e.spent != null && e.spent > 0)
+        ? (e.spent - e.plan > 0 ? "+" : "") + (Math.round((e.spent - e.plan) * 10) / 10)
+        : "—";
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${e.key ? `<a href="${JIRA_BASE + e.key}" target="_blank" rel="noopener noreferrer">${e.key}</a>` : "—"}
+            <div style="color:var(--muted);font-size:11.5px">${escapeHtml(e.title)}</div></td>
+        <td>${e.itv ? `<a href="${JIRA_BASE + e.itv}" target="_blank" rel="noopener noreferrer">${e.itv}</a>` : "—"}</td>
+        <td class="num">${sprintByName(e.relSprint)
+            ? `${sprintByName(e.relSprint).code} <span style="font-weight:400;color:var(--muted)">· ${fmtDate(sprintByName(e.relSprint).end)}${sprintByName(e.relSprint).real ? "" : " ⌁"}</span>`
+            : "—"}</td>
+        <td class="num">${e.focus == null ? "—" : e.focus + "%"}</td>
+        <td class="num">${num(e.plan)}</td>
+        <td class="num">${num(e.spent)}</td>
+        <td style="color:var(--muted);font-size:11.5px">${(e.sprints || []).map(shortSprint).map(escapeHtml).join(" · ") || "—"}</td>
+        <td>${summaryChips(e)}</td>
+        <td class="num"><span class="pill ${cls}">${delta}</span></td>`;
+      summaryBody.appendChild(tr);
+    });
+  }
+
+  /* Cards stack outward when epics share a date, so the fixed canvas height can be too small.
+     After every render, measure what the cards actually occupy and grow / shift the canvas so
+     nothing is clipped at the top or bottom. */
+  function fitRoadHeight() {
+    svg.style.transform = "";
+    markersEl.style.transform = "";
+    roadInner.style.height = ROAD_HEIGHT + "px";
+
+    const base = markersEl.getBoundingClientRect();
+    let minTop = 0, maxBottom = ROAD_HEIGHT;
+    markersEl.querySelectorAll(".card, .here-flag, .date-tag").forEach(node => {
+      if (node.style.display === "none") return;
+      const r = node.getBoundingClientRect();
+      minTop = Math.min(minTop, r.top - base.top);
+      maxBottom = Math.max(maxBottom, r.bottom - base.top);
+    });
+
+    const PAD = 28;
+    const shift = minTop < 0 ? Math.ceil(-minTop) + PAD : 0;
+    const height = Math.ceil(Math.max(ROAD_HEIGHT, maxBottom + PAD)) + shift;
+
+    roadInner.style.height = height + "px";
+    if (shift) {
+      const t = "translateY(" + shift + "px)";
+      svg.style.transform = t;
+      markersEl.style.transform = t;
+    }
+  }
+
+  function renderAll() {
+    dynamicSvg.innerHTML = "";
+    markersEl.innerHTML = "";
+    depotGrid.innerHTML = "";
+
+    const visible = EPICS.filter(e => activeStatuses.has(e.status));
+    const scheduled = visible.filter(e => relDate(e)).sort((a, b) => dayNum(relDate(a)) - dayNum(relDate(b)));
+    const unscheduled = visible.filter(e => !relDate(e));
+
+    // epics sharing a release date: alternate above/below the road, then stack outward
+    stackUsed = {};
+    const perDate = {};
+    scheduled.forEach(e => {
+      const d = relDate(e);
+      const slot = perDate[d] === undefined ? 0 : perDate[d] + 1;
+      perDate[d] = slot;
+      e.side = slot % 2 === 0 ? "T" : "B";
+      e._groupFollower = slot > 0;
+    });
+
+    scheduled.forEach(renderRoadCard);
+    renderBalloon();
+    unscheduled.forEach(renderDepotCard);
+    renderSummary();
+
+    document.querySelectorAll(".card, .depot-card").forEach(c => {
+      c.style.display = activeStatuses.has(c.dataset.status) ? "" : "none";
+    });
+
+    fitRoadHeight();
+  }
+
+  // ---- Legend / status filter ----
+  Object.keys(STATUS_META).forEach(status => {
+    const meta = STATUS_META[status];
+    const btn = document.createElement("button");
+    btn.innerHTML = `<span class="swatch" style="background:${meta.color}"></span>${meta.label} <span class="count">${EPICS.filter(e => e.status === status).length}</span>`;
+    btn.addEventListener("click", () => {
+      if (activeStatuses.has(status)) { activeStatuses.delete(status); btn.classList.add("off"); }
+      else { activeStatuses.add(status); btn.classList.remove("off"); }
+      // full re-render so filtered-out cards stop reserving stack space
+      renderAll();
+    });
+    legend.appendChild(btn);
+  });
+
+  // ---- mode toggle ----
+  const modeToggle = document.getElementById("modeToggle");
+  const modeHint = document.getElementById("modeHint");
+  function applyModeUI() {
+    document.body.classList.toggle("mode-edit", mode === "edit");
+    modeToggle.textContent = mode === "edit" ? "Switch to view mode" : "Switch to edit mode";
+    modeHint.textContent = mode === "edit"
+      ? "Edit mode: click a date on any card to change it, or the pencil to add a comment. Saves to this browser only."
+      : "Business Manager (ADMBM) Q3–Q4 epics — release sprint + ITV Actual Focus, Initial Duration და რეალურად დახარჯული სპრინტები (Jira-დან).";
+  }
+  modeToggle.addEventListener("click", () => {
+    mode = mode === "edit" ? "view" : "edit";
+    try { localStorage.setItem(MODE_KEY, mode); } catch (err) {}
+    applyModeUI(); renderAll();
+  });
+  applyModeUI();
+  renderAll();
+  // probe storage availability once so the warning is honest before any edit
+  try {
+    localStorage.setItem(STORAGE_KEY + "-probe", "1");
+    localStorage.removeItem(STORAGE_KEY + "-probe");
+  } catch (err) { storageOK = false; }
+  updateStorageNotice();
+
+  requestAnimationFrame(() => {
+    const carAnchor = anchorForT(tFor(TODAY));
+    roadWrap.scrollLeft = Math.max(0, carAnchor.x - roadWrap.clientWidth / 2);
+  });
+
+  // ---- Export / reset ----
+  const modalBackdrop = document.getElementById("modalBackdrop");
+  const modalTextarea = document.getElementById("modalTextarea");
+  document.getElementById("exportBtn").addEventListener("click", () => {
+    const data = EPICS.map(e => ({ key: e.key, title: e.title, status: e.status, date: e.date, relSprint: e.relSprint, comment: e.comment, itv: e.itv, focus: e.focus, plan: e.plan, spent: e.spent, sprints: e.sprints }));
+    modalTextarea.value = JSON.stringify(data, null, 2);
+    modalBackdrop.classList.add("open");
+    modalTextarea.focus(); modalTextarea.select();
+  });
+  document.getElementById("modalCopy").addEventListener("click", () => {
+    modalTextarea.select();
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(modalTextarea.value).catch(() => {});
+    else { try { document.execCommand("copy"); } catch (err) {} }
+  });
+  document.getElementById("modalClose").addEventListener("click", () => modalBackdrop.classList.remove("open"));
+  modalBackdrop.addEventListener("click", ev => { if (ev.target === modalBackdrop) modalBackdrop.classList.remove("open"); });
+  document.getElementById("resetBtn").addEventListener("click", () => {
+    try { localStorage.removeItem(STORAGE_KEY); } catch (err) {}
+    location.reload();
+  });
+
+  /* =====================================================================
+     LIVE JIRA SYNC
+     Epic → linked ITV Idea/Dependency (Actual Focus %, Initial Duration)
+     Epic → child stories → unique Sprints = რეალურად დახარჯული სპრინტები
+     ===================================================================== */
+  const syncState = document.getElementById("syncState");
+  const syncBtn = document.getElementById("syncBtn");
+  const bridge = (typeof window !== "undefined" && window.cowork && window.cowork.callMcpTool) ? window.cowork : null;
+  const JQL_TOOL = "mcp__50ca0ba9-6021-4ecf-9113-459231776e99__searchJiraIssuesUsingJql";
+
+  function unwrap(r) {
+    if (!r) return null;
+    if (r.isError) throw new Error(typeof r.content?.[0]?.text === "string" ? r.content[0].text : "MCP error");
+    if (r.structuredContent) return r.structuredContent;
+    try { return JSON.parse(r.content[0].text); } catch (err) { throw new Error("unparseable MCP response"); }
+  }
+  async function jql(query, fields, maxResults) {
+    const nodes = [];
+    let token = null, guard = 0;
+    do {
+      const args = { cloudId: CLOUD_ID, jql: query, fields: fields, maxResults: maxResults || 100 };
+      if (token) args.nextPageToken = token;
+      const data = unwrap(await bridge.callMcpTool(JQL_TOOL, args));
+      const issues = data?.issues || {};
+      (issues.nodes || []).forEach(n => nodes.push(n));
+      token = issues.pageInfo && issues.pageInfo.hasNextPage ? issues.pageInfo.endCursor : null;
+      guard++;
+    } while (token && guard < 10);
+    return nodes;
+  }
+  function optVal(f) {
+    if (f == null) return null;
+    if (typeof f === "object") return f.value != null ? parseFloat(f.value) : null;
+    return parseFloat(f);
+  }
+
+  async function sync() {
+    if (!bridge) { syncState.textContent = "Jira sync მიუწვდომელია (baked snapshot)"; syncBtn.disabled = true; return; }
+    syncState.classList.remove("err");
+    syncState.textContent = "სინქრონიზაცია…";
+    syncBtn.disabled = true;
+    try {
+      const keys = EPICS.filter(e => e.key).map(e => e.key);
+      const keyList = keys.join(", ");
+
+      // 1) epics: status + linked ITV
+      const epicNodes = await jql(`key in (${keyList})`, ["status", "issuelinks", "duedate"], 100);
+      const itvKeys = new Set();
+      epicNodes.forEach(n => {
+        const e = EPICS.find(x => x.key === n.key);
+        if (!e) return;
+        const st = n.fields?.status?.name;
+        if (st && STATUS_META[st]) e.status = st;
+        // Jira's Due date is the shared source of truth; a local edit for this epic still wins.
+        const due = n.fields?.duedate;
+        if (due && !(overrides[e.id] && overrides[e.id].date)) e.date = due;
+        const link = (n.fields?.issuelinks || []).find(l => (l.type?.name || "").indexOf("ITV") !== -1);
+        const other = link ? (link.inwardIssue || link.outwardIssue) : null;
+        if (other?.key) { e.itv = other.key; itvKeys.add(other.key); }
+      });
+
+      // 2) ITV ideas: Actual Focus % + Initial Duration (Sprint)
+      if (itvKeys.size) {
+        const itvNodes = await jql(`key in (${[...itvKeys].join(", ")})`,
+          [F_ACTUAL_FOCUS, F_INIT_DURATION, F_ACT_DURATION], 100);
+        itvNodes.forEach(n => {
+          EPICS.filter(e => e.itv === n.key).forEach(e => {
+            e.focus = optVal(n.fields?.[F_ACTUAL_FOCUS]);
+            e.plan = optVal(n.fields?.[F_INIT_DURATION]);
+            e.actualDuration = optVal(n.fields?.[F_ACT_DURATION]);
+          });
+        });
+      }
+
+      // 3) child issues (Story / Maintenance / Bug / Task …) → sprints + issue list
+      const storyNodes = await jql(`parent in (${keyList})`,
+        ["parent", "summary", "status", "issuetype", F_SPRINT, "customfield_10033"], 100);
+      const bucket = {}, issueBucket = {}, ownerOf = {};
+      keys.forEach(k => { bucket[k] = new Map(); issueBucket[k] = []; });
+      storyNodes.forEach(n => {
+        const pk = n.fields?.parent?.key;
+        if (!pk || !bucket[pk]) return;
+        ownerOf[n.key] = pk;
+        (n.fields?.[F_SPRINT] || []).forEach(s => { if (s && s.name) bucket[pk].set(s.id ?? s.name, s); });
+        issueBucket[pk].push({
+          key: n.key,
+          summary: n.fields?.summary || "",
+          type: n.fields?.issuetype?.name || "",
+          status: n.fields?.status?.name || "",
+          cat: n.fields?.status?.statusCategory?.key || "",
+          points: n.fields?.customfield_10033 ?? null,
+          of: null,
+          sub: false
+        });
+      });
+
+      // 4) sub-tasks / Defects hanging off those stories
+      const parentKeys = Object.keys(ownerOf);
+      if (parentKeys.length) {
+        const subNodes = await jql(`parent in (${parentKeys.join(", ")})`,
+          ["parent", "summary", "status", "issuetype"], 100);
+        subNodes.forEach(n => {
+          const parentKey = n.fields?.parent?.key;
+          const owner = ownerOf[parentKey];
+          if (!owner) return;
+          issueBucket[owner].push({
+            key: n.key,
+            summary: n.fields?.summary || "",
+            type: n.fields?.issuetype?.name || "",
+            status: n.fields?.status?.name || "",
+            cat: n.fields?.status?.statusCategory?.key || "",
+            points: null,
+            of: parentKey,
+            sub: true
+          });
+        });
+      }
+
+      EPICS.forEach(e => {
+        if (!e.key || !bucket[e.key]) return;
+        const sprints = [...bucket[e.key].values()].sort((a, b) =>
+          String(a.startDate || "").localeCompare(String(b.startDate || "")) || String(a.name).localeCompare(String(b.name)));
+        e.sprints = sprints.map(s => s.name);
+        e.spent = sprints.length;
+        e.issues = issueBucket[e.key].sort(issueSort);
+        e.issuesLoaded = true;
+
+        // release sprint: manual choice wins; otherwise the later of (planned date's sprint,
+        // the last sprint its stories actually landed in)
+        if (!(overrides[e.id] && overrides[e.id].relSprint)) {
+          const fromDate = e.date ? sprintForDate(e.date) : null;
+          const idx = e.sprints.map(sprintByName).filter(Boolean).map(s => s.i);
+          const fromStories = idx.length ? sprintByIndex(Math.max.apply(null, idx)) : null;
+          const pick = (fromDate && fromStories)
+            ? (fromDate.i >= fromStories.i ? fromDate : fromStories)
+            : (fromDate || fromStories);
+          if (pick) e.relSprint = pick.name;
+        }
+      });
+
+      renderAll();
+      syncState.textContent = "Jira-სთან სინქრონიზებულია · " + new Date().toLocaleString("ka-GE");
+    } catch (err) {
+      console.error("sync failed", err);
+      syncState.classList.add("err");
+      syncState.textContent = "სინქრონიზაცია ვერ შესრულდა: " + (err && err.message ? err.message : err);
+    } finally {
+      syncBtn.disabled = false;
+    }
+  }
+  syncBtn.addEventListener("click", sync);
+  sync();
+})();
+</script>
+</body>
+</html>
